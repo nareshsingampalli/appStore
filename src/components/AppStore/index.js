@@ -1,4 +1,6 @@
 import {Component} from 'react'
+import TabItem from '../TabItem'
+import AppItem from '../AppItem'
 import './index.css'
 
 const tabsList = [
@@ -291,23 +293,73 @@ const appsList = [
 ]
 
 class AppStore extends Component {
+  state = {
+    activedTabId: tabsList[0].tabId,
+    searchInput: '',
+  }
+
+  getFilteredApps = () => {
+    const {activedTabId, searchInput} = this.state
+
+    const filterApps = appsList.filter(
+      eachApp => eachApp.category === activedTabId,
+    )
+    const filteredApps = filterApps.filter(eachApp =>
+      eachApp.appName.toLowerCase().includes(searchInput.toLowerCase()),
+    )
+    return filteredApps
+  }
+
+  onClickTabItem = tabId => {
+    this.setState({
+      activedTabId: tabId,
+    })
+  }
+
+  onSearchInput = event => {
+    this.setState({
+      searchInput: event.target.value,
+    })
+  }
+
   render() {
+    const {activedTabId} = this.state
+    const filteredApps = this.getFilteredApps()
     return (
       <div className="app-container">
         <div className="app-store-container">
           <h1>App Store</h1>
-          <input type="search" />
-          <ul>
-            {tabsList.map(eachTab => {
-              return <li>{eachTab.displayText}</li>
-            })}
+          <div className="search-box-container">
+            <input
+              type="search"
+              className="input-search-box"
+              onChange={this.onSearchInput}
+            />
+            <button type="button" className="search-button">
+              <img
+                className="search-icon-image"
+                src="https://assets.ccbp.in/frontend/react-js/app-store/app-store-search-img.png"
+                alt="search"
+              />
+            </button>
+          </div>
+          <ul className="tab-items-container">
+            {tabsList.map(eachTab => (
+              <TabItem
+                key={eachTab.tabId}
+                tabDetails={eachTab}
+                isActive={activedTabId === eachTab.tabId}
+                onClickTabItem={this.onClickTabItem}
+              />
+            ))}
           </ul>
           <div className="app-items-container">
-            {
-              appsList.map(eachApp =>{
-                return <button>{eachApp.appName}</button>
-              })
-            }
+            {filteredApps.map(eachApp => {
+              const {appId, appName, imageUrl} = eachApp
+              return (
+                <AppItem key={appId} appName={appName} imageUrl={imageUrl} />
+              )
+            })}
           </div>
         </div>
       </div>
